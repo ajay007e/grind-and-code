@@ -1,5 +1,6 @@
 import os
 import pathlib
+import re
 import sys
 
 import requests
@@ -75,6 +76,31 @@ def generate_code_markdown(content, language):
     """
 
 
+def generate_example_block(examples):
+    matches = re.findall(r"<pre>(.*?)</pre>", examples, re.DOTALL)
+    example_md = """
+
+## 🧪 Examples
+"""
+    for i, content in enumerate(matches, 1):
+        example_md += f"""
+### Example {i}
+<pre>{content}</pre>
+
+"""
+    return example_md
+
+
+def generate_constraints_block(constraints):
+    matches = re.findall(r"<ul>(.*?)</ul>", constraints, re.DOTALL)
+    contraints_md = f"""
+
+## 📌 Constraints"
+<ul>{matches[0]}</ul>
+"""
+    return contraints_md
+
+
 def update_mardown(file_path):
     python_code = fetch_first_file_content(file_path, ".py")
     java_code = fetch_first_file_content(file_path, ".java")
@@ -101,6 +127,9 @@ def update_mardown(file_path):
 
 def generate_markdown(slug):
     details = get_leetcode_description(slug)
+    description = details["description_html"].split("<p>&nbsp;</p>")
+    example_md = generate_example_block(description[1])
+    constraints_md = generate_constraints_block(description[2])
 
     markdown_content = f"""# 🧩 {details["frontendId"]}: {details["title"]}
 
@@ -112,8 +141,9 @@ def generate_markdown(slug):
 
 ## 📜 Description
 
-{details["description_html"]}
-
+{description[0]}
+{example_md}
+{constraints_md}
 """
     pathlib.Path(details["frontendId"]).mkdir(parents=True, exist_ok=True)
     filename = f"{details['frontendId']}/{details['frontendId']}.md"
