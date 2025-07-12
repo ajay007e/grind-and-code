@@ -124,6 +124,8 @@ def update_mardown(file_path):
     with open(filename, "a") as file:
         file.write(markdown_content)
 
+    print(f"\n✅ Updated: {filename}")
+
 
 def generate_markdown(slug):
     details = get_leetcode_description(slug)
