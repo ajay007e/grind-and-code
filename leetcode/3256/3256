@@ -1,0 +1,22 @@
+class Solution:
+    def maximumValueSum(self, board: List[List[int]]) -> int:
+        max_row = defaultdict(list)
+
+        for i in range(len(board)):
+            for j in range(len(board[i])):
+                max_row[i].append((board[i][j], j))
+
+                if len(max_row[i]) > 3:
+                    max_row[i] = list(sorted(max_row[i]))
+                    max_row[i].pop(0)
+        ans = float('-inf')
+
+        for i in range(len(board)):
+            for j in range(i+1, len(board)):
+                for k in range(j+1, len(board)):
+                    for mx1, idx1 in max_row[i]:
+                        for mx2, idx2 in max_row[j]:
+                            for mx3, idx3 in max_row[k]:
+                                if len(set([idx1, idx2, idx3])) == 3:
+                                    ans = max(ans, mx1 + mx2 + mx3)
+        return ans
