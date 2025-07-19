@@ -110,19 +110,35 @@ def update_mardown(file_path):
     if java_code != None:
         code += generate_code_markdown(java_code, "java")
 
+    start_marker = "<!--- code section starts -->"
+    end_marker = "<!--- code section ends -->"
     markdown_content = f"""
 
 ---
-
+{start_marker}
 ## 🧠 Code
 
 {code}
 
-
+{end_marker}
 """
     filename = fetch_file_with_extension(file_path, ".md")
-    with open(filename, "a") as file:
-        file.write(markdown_content)
+    content = ""
+    with open(filename, "r") as file:
+        content = file.read()
+
+    start_index = content.find(start_marker)
+    end_index = content.find(end_marker, start_index)
+
+    if start_index != -1 and end_index != -1:
+        before = content[:start_index].rstrip()
+        after = content[end_index + len(end_marker) :].lstrip()
+        updated_content = f"{before}\n\n{markdown_content.strip()}\n\n{after}"
+        with open(filename, "w") as file:
+            file.write(updated_content)
+    else:
+        with open(filename, "a") as file:
+            file.write(markdown_content)
 
     print(f"\n✅ Updated: {filename}")
 
@@ -149,10 +165,12 @@ def generate_markdown(slug):
 """
     pathlib.Path(details["frontendId"]).mkdir(parents=True, exist_ok=True)
     filename = f"{details['frontendId']}/{details['frontendId']}.md"
-    with open(filename, "w") as f:
-        f.write(markdown_content)
-
-    print(f"\n✅ Saved: {filename}")
+    if not os.path.exists(filename):
+        with open(filename, "w") as f:
+            f.write(markdown_content)
+        print(f"\n✅ Saved: {filename}")
+    else:
+        print(f"\n⚠️ Skipped: {filename} already exists")
 
 
 def main():
